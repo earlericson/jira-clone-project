@@ -1,16 +1,13 @@
 import {toast} from "sonner";
-import { useRouter } from "next/navigation";
-
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { InferRequestType, InferResponseType } from "hono";
 
 import { client } from "@/lib/rpc";
 
-type ResponseType = InferResponseType<typeof client.api.auth.login["$post"]>
-type RequestType = InferRequestType<typeof client.api.auth.login["$post"]>;
+type ResponseType = InferResponseType<typeof client.api.workspaces["$post"]>;
+type RequestType = InferRequestType<typeof client.api.workspaces["$post"]>;
 
-export const useLogin = () => {
-    const router = useRouter();
+export const useCreateWorkspace = () => {
     const queryClient = useQueryClient();
 
     const mutation = useMutation<
@@ -18,8 +15,8 @@ export const useLogin = () => {
         Error,
         RequestType
     >({
-        mutationFn: async ({ json }) => {
-            const response = await client.api.auth.login["$post"]({ json });
+        mutationFn: async ({ form }) => {
+            const response = await client.api.workspaces["$post"]({ form });
 
             if(!response.ok) {
                 throw new Error("Something went wrong!");
@@ -28,13 +25,12 @@ export const useLogin = () => {
             return await response.json();
         },
         onSuccess: () => {
-            toast.success("Logged in");
-            router.refresh();
-            queryClient.invalidateQueries({ queryKey: ["current"] });
+            toast.success("Workspace created");
+            queryClient.invalidateQueries({ queryKey: ["workspaces"] });
         },
         onError: () => {
-            toast.error("Failed to log in");
-        },
+            toast.error("Failed to create workspace");
+        }
     });
 
     return mutation;
