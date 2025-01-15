@@ -18,14 +18,9 @@ interface DatePickerProps {
     onChange: (date: Date) => void;
     className?: string;
     placeholder?: string;
-}
+};
 
-export const DatePicker = ({
-    value,
-    onChange,
-    className,
-    placeholder = "Select date"
-}: DatePickerProps) => {
+export const DatePicker = ({ value, onChange, className, placeholder = "Select date" }: DatePickerProps) => {
     return (
         <Popover>
             <PopoverTrigger asChild>
