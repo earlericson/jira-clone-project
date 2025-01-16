@@ -25,7 +25,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { MemberAvatar } from "@/features/members/components/member-avatar";
-import { TaskStatus } from "../type";
+import { TaskStatus } from "../types";
 import { ProjectAvatar } from "@/features/projects/components/project-avatar";
 
 interface CreateTaskFormProps {
