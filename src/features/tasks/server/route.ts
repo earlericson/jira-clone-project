@@ -303,8 +303,8 @@ const app = new Hono()
                 workspaceId: task.workspaceId,
                 userId: currentUser.$id,
             });
-            
-            if(!currentMember) {
+
+            if (!currentMember) {
                 return c.json({ error: "Unauthorized" }, 401);
             }
 
@@ -338,6 +338,33 @@ const app = new Hono()
             });
         }
     )
+    .post(
+        "/bulk-update",
+        sessionMiddleware,
+        zValidator(
+            "json",
+            z.object({
+                tasks: z.array(
+                    z.object({
+                        $id: z.string(),
+                        status: z.nativeEnum(TaskStatus),
+                        position: z.number().int().positive().min(1000).max(1_000_000),
+                    })
+                )
+            })
+        ),
+        async (c) => {
+            const databases = c.get("databases");
+            const { tasks } = await c.req.valid("json");
 
+            const tasksToUpdate = await databases.listDocuments<Task>(
+                DATABASE_ID,
+                TASKS_ID,
+                [Query.contains("$id", tasks.map((task) => task.$id))]
+            );
+
+            const workspaceIds = new Set(tasksToUpdate.documents.map(task => task.workspaceId));
+        }
+    )
 
 export default app;
