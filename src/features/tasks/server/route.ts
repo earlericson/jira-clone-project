@@ -355,6 +355,7 @@ const app = new Hono()
         ),
         async (c) => {
             const databases = c.get("databases");
+            const user = c.get("user");
             const { tasks } = await c.req.valid("json");
 
             const tasksToUpdate = await databases.listDocuments<Task>(
@@ -364,6 +365,40 @@ const app = new Hono()
             );
 
             const workspaceIds = new Set(tasksToUpdate.documents.map(task => task.workspaceId));
+            if (workspaceIds.size !== 1) {
+                return c.json({ error: "All tasks must belong to the same workspace" })
+            }
+
+
+            const workspaceId = workspaceIds.values().next().value;
+
+            if (!workspaceId || typeof workspaceId !== "string") {
+                return c.json({ error: "Invalid workspace ID" }, 400);
+            }
+
+            const member = await getMember({
+                databases,
+                workspaceId,
+                userId: user.$id,
+            })
+
+            if (!member) {
+                return c.json({ error: "Unauthorized" }, 401);
+            }
+
+            const updatedTasks = await Promise.all(
+                tasks.map(async (task) => {
+                    const { $id, status, position } = task;
+                    return databases.updateDocument<Task>(
+                        DATABASE_ID,
+                        TASKS_ID,
+                        $id,
+                        { status, position }
+                    );
+                })
+            );
+
+            return c.json ({ data: updatedTasks });
         }
     )
 
