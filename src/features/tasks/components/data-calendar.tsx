@@ -1,3 +1,10 @@
+import { useState } from "react";
+import { Task } from '../types';
+import { enUS } from "date-fns/locale";
+import { EventCard } from "./event-card";
+import { Calendar, dateFnsLocalizer } from "react-big-calendar";
+import "react-big-calendar/lib/css/react-big-calendar.css";
+import "./data-calendar.css";
 import {
     format,
     getDay,
@@ -6,12 +13,14 @@ import {
     addMonths,
     subMonths,
 } from "date-fns";
-import { Task } from '../types';
-import { Calendar, dateFnsLocalizer } from "react-big-calendar";
-import { enUS } from "date-fns/locale";
-import { useState } from "react"; 
-import "react-big-calendar/lib/css/react-big-calendar.css";
-import "./data-calendar.css";
+
+import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+
+
+
+
 
 const locales = {
     "en-US": enUS
@@ -28,6 +37,39 @@ const localizer = dateFnsLocalizer({
 interface DataCalendarProps {
     data: Task[];
 };
+
+interface CustomToolBarProps {
+    date: Date,
+    onNavigate: (action: "PREV" | "NEXT" | "TODAY") => void;
+}
+
+const CustomToolBar = ({
+    date,
+    onNavigate
+}: CustomToolBarProps) => {
+    return (
+        <div className="flex mb-4 gap-x-2 items-center w-full lg:w-auto justify-center lg:justify-start">
+            <Button
+                onClick={() => onNavigate("PREV")}
+                variant="secondary"
+                size="icon"
+            >
+                <ChevronLeftIcon className="size-4" />
+            </Button>
+            <div className="flex items-center border border-input rounded-md px-3 py-2 h-8 justify-center w-full lg:w-auto">
+                <CalendarIcon className="size-4 mr-2" />
+                <p className="text-sm">{format(date, "MMMM yyyy")}</p>
+            </div>
+            <Button
+                onClick={() => onNavigate("NEXT")}
+                variant="secondary"
+                size="icon"
+            >
+                <ChevronRightIcon className="size-4" />
+            </Button>
+        </div>
+    )
+}
 
 export const DataCalendar = ({
     data,
@@ -57,7 +99,7 @@ export const DataCalendar = ({
     };
 
     return (
-        <Calendar 
+        <Calendar
             localizer={localizer}
             date={value}
             events={events}
@@ -69,6 +111,20 @@ export const DataCalendar = ({
             max={new Date(new Date().setFullYear(new Date().getFullYear() + 1))}
             formats={{
                 weekdayFormat: (date, culture, localizer) => localizer?.format(date, "EEE", culture) ?? ""
+            }}
+            components={{
+                eventWrapper: ({ event }) => (
+                    <EventCard
+                        id={event.id}
+                        title={event.title}
+                        assignee={event.assignee}
+                        project={event.project}
+                        status={event.status}
+                    />
+                ),
+                toolbar: () => (
+                    <CustomToolBar date={value} onNavigate={handleNavigate} />
+                )
             }}
         />
     );
