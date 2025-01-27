@@ -95,10 +95,6 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
         mutate({
             form: finalValues,
             param: { workspaceId: initialValues.$id }
-        }, {
-            onSuccess: () => {
-                form.reset();
-            },
         });
     };
 
@@ -113,7 +109,7 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
 
     const handleCopyInviteLink = () => {
         navigator.clipboard.writeText(fullInviteLink)
-        .then(() => toast.success("Invite link copied to clipboard"));
+            .then(() => toast.success("Invite link copied to clipboard"));
     };
 
     return (
